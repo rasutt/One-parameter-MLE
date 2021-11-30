@@ -1,0 +1,10 @@
+---
+title: "Maximum Likelihood in Shiny"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is a little web app in Shiny to illustrate maximum likelihood estimation. It generates samples of a random variable given a single parameter, and shows the samples and the likelihood function over the parameter.
