@@ -109,8 +109,7 @@ server <- function(input, output) {
     plot(rep(1:n, 2), cis(), main = "Confidence intervals for all samples",
          ylab = par_name(), xlab = "Sample", type = 'n')
     arrows(1:n, cis()[1, ], 1:n, cis()[2, ], code = 3, length = 0.02, 
-           angle = 90, 
-           lwd = 1 + !ci_cov())
+           angle = 90, lwd = 1 + !ci_cov())
     abline(h = true_val(), col = 2)
   })
   

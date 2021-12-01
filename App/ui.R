@@ -39,23 +39,12 @@ ui <- fluidPage(
     
     # Main panel for displaying outputs
     mainPanel(
-      # Head of first sample
       h4("Head of first sample"),
       tableOutput(outputId = "dataHead"),
-      
-      # Scatterplot
       plotOutput(outputId = "scatterPlot"),
-      
-      # NLL plot
       plotOutput(outputId = "NLLPlot"),
-      
-      # MLEs plot
       plotOutput(outputId = "MLEplot"),
-      
-      # CI plot
       plotOutput(outputId = "CIPlot"),
-      
-      # CI coverage
       textOutput(outputId = "ciCov")
     )
   )

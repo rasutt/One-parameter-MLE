@@ -1,4 +1,4 @@
-# Set bounds on inputs
+# Set bounds on inputs and step size for input slider and NLL plots
 min_p = 0
 max_p = 1
 step_p = 0.01
