@@ -31,7 +31,7 @@ ui <- fluidPage(
         ),
         tabPanel(
           title = "Normal",
-          sliderInput(inputId = "mu", label = "Probability:",
+          sliderInput(inputId = "mu", label = "Mean:",
                       min_mu, max_mu, value = 0, step = step_mu)
         )
       )
