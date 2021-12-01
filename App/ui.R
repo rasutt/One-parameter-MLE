@@ -3,25 +3,37 @@ library(shiny)
 # Define UI for app
 ui <- fluidPage(
   # App title
-  titlePanel("Maximum likelihood"),
-  
+  titlePanel("Maximum likelihood estimation"),
+
   # Sidebar layout with input and output definitions
   sidebarLayout(
     # Sidebar panel for inputs
     sidebarPanel(
-      # Selector for variable type
-      selectInput(inputId = "rv", label = "Variable type:",
-                  choices = c("Bernoulli", "Poisson", "Normal"))
-      
-      # # Slider for the Standard deviation
-      # sliderInput(inputId = "b", label = "Intercept:",
-      #             min = min_sig, max = max_sig, value = 1.5, step = step, 
-      #             animate = animationOptions(int = 2000))
+      # Tabset panel for variable types
+      tabsetPanel(
+        id = "rv",
+        tabPanel(
+          title = "Bernoulli",
+          sliderInput(inputId = "p", label = "Probability:",
+                      min_p, max_p, value = 0.5, step = step_p)
+        ),
+        tabPanel(
+          title = "Poisson",
+          sliderInput(inputId = "lambda", label = "Rate:",
+                      min_lambda, max_lambda, value = 0.5, step = step_lambda)
+        ),
+        tabPanel(
+          title = "Normal",
+          sliderInput(inputId = "mu", label = "Probability:",
+                      min_mu, max_mu, value = 0, step = step_mu)
+        )
+      )
     ),
     
     # Main panel for displaying outputs
     mainPanel(
       # Head of first sample
+      h4("Head of first sample"),
       tableOutput(outputId = "dataHead"),
       
       # Scatterplot
@@ -34,7 +46,10 @@ ui <- fluidPage(
       plotOutput(outputId = "MLEplot"),
       
       # CI plot
-      plotOutput(outputId = "CIPlot")
+      plotOutput(outputId = "CIPlot"),
+      
+      # CI coverage
+      textOutput(outputId = "ciCov")
     )
   )
 )

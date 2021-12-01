@@ -7,9 +7,9 @@ server <- function(input, output) {
   true_val = reactive(
     switch(
       input$rv,
-      "Bernoulli" = 0.5,
-      "Poisson" = 1,
-      "Normal" = 0,
+      "Bernoulli" = input$p,
+      "Poisson" = input$lambda,
+      "Normal" = input$mu,
     )
   )
   
@@ -17,9 +17,9 @@ server <- function(input, output) {
   y = reactive(
     switch (
       input$rv,
-      "Bernoulli" = matrix(rbinom(n * n_samps, 1, 0.5), n, n_samps),
-      "Poisson" = matrix(rpois(n * n_samps, 1), n, n_samps),
-      "Normal" = matrix(rnorm(n * n_samps), n, n_samps),
+      "Bernoulli" = matrix(rbinom(n * n_samps, 1, true_val()), n, n_samps),
+      "Poisson" = matrix(rpois(n * n_samps, true_val()), n, n_samps),
+      "Normal" = matrix(rnorm(n * n_samps, true_val()), n, n_samps),
     )
   )
   
@@ -34,7 +34,8 @@ server <- function(input, output) {
       "Poisson" = barplot(table(y()[, 1])),
       "Normal" = hist(y()[, 1], main = "", xlab = "", ylab = "")
     )
-    title(main = "Data", ylab = "Count", xlab = "Value")
+    title(main = "Value counts for first sample", ylab = "Count", 
+          xlab = "Value")
   })
   
   # Set parameter name for plot
@@ -58,9 +59,9 @@ server <- function(input, output) {
     # Create grid of parameter values and vector for NLL values
     nll_grid = par_grid = switch (
       input$rv,
-      "Bernoulli" = seq(0, 1, 0.02),
-      "Poisson" = seq(0, 2, 0.02),
-      "Normal" = seq(-1, 1, 0.02)
+      "Bernoulli" = seq(min_p, max_p, step_p),
+      "Poisson" = seq(min_lambda, max_lambda, step_lambda),
+      "Normal" = seq(min_mu, max_mu, step_mu)
     )
     
     # Find NLL over grid of parameter values
@@ -69,15 +70,18 @@ server <- function(input, output) {
     }
     
     # Plot NLL
-    plot(par_grid, nll_grid, main = "Negative log-likelihood", 
-         xlab = par_name(), ylab = "NLL", type = 'l')
+    plot(
+      par_grid, nll_grid, 
+      main = "Negative log-likelihood and confidence interval for first sample", 
+      xlab = par_name(), ylab = "NLL", type = 'l'
+    )
     abline(v = true_val(), col = 2)
     abline(v = mles()[1], col = 4)
     abline(v = cis()[1, 1], col = 4, lty = 2)
     abline(v = cis()[2, 1], col = 4, lty = 2)
   })
   
-  # Find maximum likelihood estimates
+  # Find maximum likelihood estimates and confidence intervals
   mles = reactive(colMeans(y()))
   cis = reactive({
     var_est = switch (
@@ -92,7 +96,8 @@ server <- function(input, output) {
   
   # Plot MLEs
   output$MLEplot = renderPlot({
-    boxplot(mles(), main = "Maximum likelihood estimates", ylab = par_name())
+    boxplot(mles(), main = "Maximum likelihood estimates for all samples", 
+            ylab = par_name())
     abline(h = true_val(), col = 2)
   })
   
@@ -101,12 +106,16 @@ server <- function(input, output) {
   
   # Plot confidence intervals
   output$CIPlot = renderPlot({
-    plot(rep(1:n, 2), cis(), main = "Confidence intervals",
+    plot(rep(1:n, 2), cis(), main = "Confidence intervals for all samples",
          ylab = par_name(), xlab = "Sample", type = 'n')
     arrows(1:n, cis()[1, ], 1:n, cis()[2, ], code = 3, length = 0.02, 
            angle = 90, 
            lwd = 1 + !ci_cov())
     abline(h = true_val(), col = 2)
-    print(mean(ci_cov()))
   })
+  
+  # Print CI coverage
+  output$ciCov = renderText(
+    paste("Confidence interval coverage over all samples:", mean(ci_cov()))
+  )
 }
