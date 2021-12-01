@@ -1,63 +1,112 @@
-# Set number of samples
+# Set sample size and number of samples
 n = 1e2
+n_samps = 1e2
 
 # Define server logic for app
 server <- function(input, output) {
+  true_val = reactive(
+    switch(
+      input$rv,
+      "Bernoulli" = 0.5,
+      "Poisson" = 1,
+      "Normal" = 0,
+    )
+  )
+  
   # Sample data
   y = reactive(
     switch (
       input$rv,
-      "Poisson" = rpois(1e3, lambda = 2),
-      "Bernoulli" = rbinom(1e3, 1, 0.5),
-      "Normal" = rnorm(1e3, 5)
+      "Bernoulli" = matrix(rbinom(n * n_samps, 1, 0.5), n, n_samps),
+      "Poisson" = matrix(rpois(n * n_samps, 1), n, n_samps),
+      "Normal" = matrix(rnorm(n * n_samps), n, n_samps),
     )
   )
   
-  # Plot data
+  # Print head of first sample
+  output$dataHead <- renderTable(head(data.frame(Data = y()[, 1])))
+  
+  # Plot first sample
   output$scatterPlot <- renderPlot({
     switch (
       input$rv,
-      "Poisson" = barplot(table(y())),
-      "Bernoulli" = barplot(table(y())),
-      "Normal" = hist(y(), main = "", xlab = "", ylab = "")
+      "Bernoulli" = barplot(table(y()[, 1])),
+      "Poisson" = barplot(table(y()[, 1])),
+      "Normal" = hist(y()[, 1], main = "", xlab = "", ylab = "")
     )
     title(main = "Data", ylab = "Count", xlab = "Value")
   })
   
-  # Plot negative log-likelihood surface
+  # Set parameter name for plot
+  par_name = reactive(switch(
+    input$rv,
+    "Bernoulli" = "Probability",
+    "Poisson" = "Rate",
+    "Normal" = "Mean"
+  ))
+  
+  # Plot negative log-likelihood surface for first sample
   output$NLLPlot <- renderPlot({
     # Define NLL function
     nll = switch (
       input$rv,
-      "Poisson" = function(y, lambda) -sum(dpois(y(), lambda, log = T)),
-      "Bernoulli" = function(y, p) -sum(dbinom(y(), 1, p, log = T)),
-      "Normal" = function(y, mu) -sum(dnorm(y(), mu, log = T))
+      "Bernoulli" = function(y, p) -sum(dbinom(y, 1, p, log = T)),
+      "Poisson" = function(y, lambda) -sum(dpois(y, lambda, log = T)),
+      "Normal" = function(y, mu) -sum(dnorm(y, mu, log = T))
     )
     
     # Create grid of parameter values and vector for NLL values
     nll_grid = par_grid = switch (
       input$rv,
-      "Poisson" = seq(1, 3, 0.1),
-      "Bernoulli" = seq(0, 1, 0.1),
-      "Normal" = seq(4, 6, 0.1)
+      "Bernoulli" = seq(0, 1, 0.02),
+      "Poisson" = seq(0, 2, 0.02),
+      "Normal" = seq(-1, 1, 0.02)
     )
     
     # Find NLL over grid of parameter values
     for (i in seq_along(nll_grid)) {
-      nll_grid[i] = nll(y(), par_grid[i])
+      nll_grid[i] = nll(y()[, 1], par_grid[i])
     }
     
-    # Set parameter name for plot
-    par_name = switch(
-      input$rv,
-      "Poisson" = "Rate",
-      "Bernoulli" = "Probability",
-      "Normal" = "Mean"
-    )
-
     # Plot NLL
-    plot(par_grid, nll_grid, main = "Negative log-likelihood", xlab = par_name, 
-         ylab = "NLL", type = 'l')
-    
+    plot(par_grid, nll_grid, main = "Negative log-likelihood", 
+         xlab = par_name(), ylab = "NLL", type = 'l')
+    abline(v = true_val(), col = 2)
+    abline(v = mles()[1], col = 4)
+    abline(v = cis()[1, 1], col = 4, lty = 2)
+    abline(v = cis()[2, 1], col = 4, lty = 2)
+  })
+  
+  # Find maximum likelihood estimates
+  mles = reactive(colMeans(y()))
+  cis = reactive({
+    var_est = switch (
+      input$rv,
+      "Bernoulli" = mles() * (1 - mles()),
+      "Poisson" = mles(),
+      "Normal" = apply(y(), 2, var)
+    )
+    rbind(mles(), mles()) + c(-1, 1) * 1.96 * 
+      sqrt(matrix(var_est, 2, n_samps, T) / n)
+  })
+  
+  # Plot MLEs
+  output$MLEplot = renderPlot({
+    boxplot(mles(), main = "Maximum likelihood estimates", ylab = par_name())
+    abline(h = true_val(), col = 2)
+  })
+  
+  # Check CI coverage
+  ci_cov = reactive((true_val() > cis()[1, ]) & (true_val() < cis()[2, ]))
+  
+  # Plot confidence intervals
+  output$CIPlot = renderPlot({
+    plot(rep(1:n, 2), cis(), main = "Confidence intervals",
+         ylab = par_name(), xlab = "Sample", type = 'n')
+    arrows(1:n, cis()[1, ], 1:n, cis()[2, ], code = 3, length = 0.02, 
+           angle = 90, 
+           lwd = 1 + !ci_cov())
+    abline(h = true_val(), col = 2)
+    print(mean(ci_cov()))
   })
 }

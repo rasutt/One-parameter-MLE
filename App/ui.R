@@ -21,16 +21,20 @@ ui <- fluidPage(
     
     # Main panel for displaying outputs
     mainPanel(
-      fluidRow(
-        splitLayout(
-          cellWidths = c("55%", "45%"),
-          # NLL plot
-          plotOutput(outputId = "NLLPlot"),
-          
-          # Scatterplot
-          plotOutput(outputId = "scatterPlot")
-        )
-      )
+      # Head of first sample
+      tableOutput(outputId = "dataHead"),
+      
+      # Scatterplot
+      plotOutput(outputId = "scatterPlot"),
+      
+      # NLL plot
+      plotOutput(outputId = "NLLPlot"),
+      
+      # MLEs plot
+      plotOutput(outputId = "MLEplot"),
+      
+      # CI plot
+      plotOutput(outputId = "CIPlot")
     )
   )
 )
