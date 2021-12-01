@@ -5,9 +5,9 @@ account: genpopsim
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 5238832
-bundleId: 5312587
+bundleId: 5312624
 url: https://genpopsim.shinyapps.io/Maximum_likelihood_estimation/
-when: 1638334436.20195
-lastSyncTime: 1638334436.20195
+when: 1638335212.27566
+lastSyncTime: 1638335212.27566
 asMultiple: FALSE
 asStatic: FALSE
