@@ -101,8 +101,32 @@ server <- function(input, output) {
     abline(h = true_val(), col = 2)
   })
   
+  # Find parameter bounds
+  lb = reactive({
+    switch(
+      input$rv,
+      "Bernoulli" = 0,
+      "Poisson" = 0,
+      "Normal" = -Inf,
+    )
+  })
+  ub = reactive({
+    switch(
+      input$rv,
+      "Bernoulli" = 1,
+      "Poisson" = Inf,
+      "Normal" = Inf,
+    )
+  })
+  
+  
+  # Check CI doesn't cross parameter bounds
+  ci_ok = reactive(cis()[1, ] > lb() & cis()[2, ] < ub())
+  
   # Check CI coverage
-  ci_cov = reactive((true_val() > cis()[1, ]) & (true_val() < cis()[2, ]))
+  ci_cov = reactive({
+    ci_ok() & true_val() > cis()[1, ] & true_val() < cis()[2, ]
+  })
   
   # Plot confidence intervals
   output$CIPlot = renderPlot({
@@ -111,6 +135,7 @@ server <- function(input, output) {
     arrows(1:n, cis()[1, ], 1:n, cis()[2, ], code = 3, length = 0.02, 
            angle = 90, lwd = 1 + !ci_cov())
     abline(h = true_val(), col = 2)
+    abline(h = c(lb(), ub()))
   })
   
   # Print CI coverage
