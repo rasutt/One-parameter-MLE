@@ -7,10 +7,6 @@ Poisson, or Normal random variable. It takes a single parameter as
 input, and shows the value counts and negative log-likelihood for the
 first sample, and the MLEs, confidence intervals, and CI coverage over
 all samples. It is accessible at
-<https://genpopsim.shinyapps.io/Maximum_likelihood_estimation/>.
-
-### Things to do
-
--   It needs to exclude confidence intervals that cross parameter
-    boundaries, and for boundary estimates, from plot and coverage
-    calculations.
+<https://genpopsim.shinyapps.io/Maximum_likelihood_estimation/>. Rachel
+Fewster has linked the app from her page on DIY modelling at
+<https://www.stat.auckland.ac.nz/~fewster/diymodelling/>.
