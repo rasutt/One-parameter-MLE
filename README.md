@@ -8,3 +8,9 @@ input, and shows the value counts and negative log-likelihood for the
 first sample, and the MLEs, confidence intervals, and CI coverage over
 all samples. It is accessible at
 <https://genpopsim.shinyapps.io/Maximum_likelihood_estimation/>.
+
+### Things to do
+
+-   It needs to exclude confidence intervals that cross parameter
+    boundaries, and for boundary estimates, from plot and coverage
+    calculations.
